@@ -3,17 +3,28 @@ import "../styles/index.css";
 
 import Card from "./components/UI/card";
 import Score from "./components/score";
+interface ICard {
+  name: string;
+  url: string;
+}
 function App() {
-  const [cards, setCards] = useState([{ name: "", url: "" }]);
+  const [cards, setCards] = useState<ICard[]>([]);
   const [currentScore, setCurrentScore] = useState(0);
   const [highestScore, setHighestScore] = useState(0);
   const [clickedCards, setClickedCards] = useState<string[]>([]);
+  function shuffleArray<T>(array: T[]): T[] {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]]; // Swap elements
+    }
+    return array;
+  }
   useEffect(() => {
     fetch("https://pokeapi.co/api/v2/pokemon?limit=49")
       .then((response) => response.json().then((data) => data.results))
 
       .then((results) => {
-        setCards(results);
+        setCards(shuffleArray<ICard>(results));
       });
   }, []);
 
@@ -26,8 +37,8 @@ function App() {
     }
     setClickedCards((prevClickedCards) => {
       const clonedCards = prevClickedCards;
-      let newCards = clonedCards;
-      newCards.push(cardId);
+      let newCards = [...clonedCards, cardId];
+
       return newCards;
     });
     setCurrentScore((prevScore) => {
@@ -37,8 +48,7 @@ function App() {
         Math.max(prevHighestScore, newScore),
       );
 
-      // Log the new score
-      console.log(newScore);
+      setCards((prevCards) => shuffleArray<ICard>([...prevCards]));
 
       return newScore;
     });
